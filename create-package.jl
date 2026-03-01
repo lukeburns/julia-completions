@@ -7,20 +7,17 @@ JULIA_VERSION = VersionNumber(VERSION.major, VERSION.minor, VERSION.patch)
 pkgdir = joinpath(rootdir, "julia-completions/$JULIA_VERSION")
 try mkpath(pkgdir) catch end
 
-open(joinpath(pkgdir, "package.yml"), "w") do io
-  println(io, "matches:")
-  for (word, char) in REPL.REPLCompletions.latex_symbols
+function printrule(io::IO, (word, char)::Pair)
   println(io, rstrip("""
     - trigger: "\\\\$(word[2:end]) "
       replace: "$char"
   """))
-  end
-  for (word, char) in REPL.REPLCompletions.emoji_symbols
-  println(io, rstrip("""
-    - trigger: "$(word[2:end])"
-      replace: "$char"
-  """))
-  end
+end
+
+open(joinpath(pkgdir, "package.yml"), "w") do io
+  println(io, "matches:")
+  printrule.(io, collect(pairs(REPL.REPLCompletions.latex_symbols)))
+  printrule.(io, collect(pairs(REPL.REPLCompletions.emoji_symbols)))
 end
 
 # Create README.md
